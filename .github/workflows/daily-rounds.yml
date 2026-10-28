@@ -1,0 +1,46 @@
+name: Generate daily rounds
+
+# Keeps the next 7 days stocked with published rounds. Runs every day just
+# after midnight UTC; future rounds stay hidden from players until their date.
+on:
+  schedule:
+    - cron: "15 0 * * *"
+  workflow_dispatch:
+    inputs:
+      days:
+        description: "How many days ahead to fill"
+        default: "7"
+      status:
+        description: "Save new rounds as published or draft"
+        default: "published"
+        type: choice
+        options: [published, draft]
+      refresh_clues:
+        description: "Also switch queued rounds to the word bank's current clues"
+        type: boolean
+        default: false
+      dry_run:
+        description: "Preview only, write nothing"
+        type: boolean
+        default: false
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Generate rounds
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: >-
+          npm run generate-rounds --
+          --days "${{ inputs.days || '7' }}"
+          --status "${{ inputs.status || 'published' }}"
+          ${{ inputs.refresh_clues && '--refresh-clues' || '' }}
+          ${{ inputs.dry_run && '--dry-run' || '' }}
