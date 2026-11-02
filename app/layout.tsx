@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import NavBar from "@/components/NavBar";
@@ -24,6 +25,13 @@ const gaMeasurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
 const googleSiteVerification = process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION;
 const needsConsentMode = Boolean(adsenseClientId || gaMeasurementId);
 
+// Screens with no publisher content (forms, stats, admin) must not carry
+// Google-served ads -- AdSense policy. The path comes from proxy.ts.
+const NO_AD_PATHS = ["/sign-in", "/admin", "/auth", "/stats"];
+function adsAllowedOn(pathname: string): boolean {
+  return !NO_AD_PATHS.some((p) => pathname === p || pathname.startsWith(`${p}/`));
+}
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -48,7 +56,10 @@ export const metadata: Metadata = {
   ...(adsenseClientId && { other: { "google-adsense-account": adsenseClientId } }),
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  const pathname = (await headers()).get("x-pathname") ?? "/";
+  const showAds = Boolean(adsenseClientId) && adsAllowedOn(pathname);
+
   return (
     <html
       lang="en"
@@ -79,7 +90,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             }}
           />
         )}
-        {adsenseClientId && (
+        {showAds && (
           <script
             async
             src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${adsenseClientId}`}

@@ -11,6 +11,9 @@
  * (see is_round_visible), so queueing a week ahead is safe and leaves time to
  * unpublish or delete a round from /admin.
  *
+ * Each answer's optional "about" note (shown once the puzzle is solved) is
+ * kept in sync with the word bank's "about" column.
+ *
  * Each answer's clue is the one in the word bank, so editing a clue in the CSV
  * changes it for rounds created from then on. --refresh-clues also switches
  * already-queued future rounds over to the word bank's current clues.
@@ -114,6 +117,7 @@ interface BankRow {
   answer: string;
   clueText: string;
   difficulty: number;
+  about: string | null;
 }
 
 function loadWordBank(): BankRow[] {
@@ -127,6 +131,8 @@ function loadWordBank(): BankRow[] {
       return idx;
     };
     const [answerCol, clueCol, difficultyCol] = [col("answer"), col("clue"), col("difficulty")];
+    // Optional column: a short note about the answer, shown after solving.
+    const aboutCol = header.findIndex((h) => h.trim().toLowerCase() === "about");
 
     for (const r of rows) {
       const displayAnswer = (r[answerCol] ?? "").trim();
@@ -134,7 +140,8 @@ function loadWordBank(): BankRow[] {
       const difficulty = Math.min(5, Math.max(1, Math.round(Number(r[difficultyCol]) || 3)));
       const answer = normalizeAnswer(displayAnswer);
       if (!answer || !clueText) continue;
-      out.push({ category, displayAnswer, answer, clueText, difficulty });
+      const about = aboutCol === -1 ? null : (r[aboutCol] ?? "").trim() || null;
+      out.push({ category, displayAnswer, answer, clueText, difficulty, about });
     }
   }
   return out;
@@ -197,6 +204,7 @@ export async function generateRounds(supabase: SupabaseClient, args: Args, today
           answer: b.answer,
           display_answer: b.displayAnswer,
           difficulty: b.difficulty,
+          about: b.about,
         })),
       )
       .select();
@@ -207,6 +215,22 @@ export async function generateRounds(supabase: SupabaseClient, args: Args, today
     }
   }
   console.log(`Word bank: ${bank.length} rows, ${uniqueNewEntries.length} new entries${args.dryRun ? " (dry run: not saved)" : ""}.`);
+
+  // Keep each existing answer's "about" note in step with the word bank.
+  const aboutUpdates = new Map<string, string | null>();
+  for (const b of bank) {
+    const entry = entryByKey.get(entryKey(b.category, b.answer));
+    if (entry && !aboutUpdates.has(entry.id) && (entry.about ?? null) !== b.about) aboutUpdates.set(entry.id, b.about);
+  }
+  if (!args.dryRun) {
+    for (const [id, about] of aboutUpdates) {
+      const { error } = await supabase.from("entries").update({ about }).eq("id", id);
+      if (error) throw error;
+      const entry = entries.find((e) => e.id === id);
+      if (entry) entry.about = about;
+    }
+  }
+  console.log(`About notes: ${aboutUpdates.size} updated${args.dryRun ? " (dry run: not saved)" : ""}.`);
 
   const clueKey = (entryId: string, text: string) => `${entryId}:${text.toLowerCase()}`;
   const existingClues = new Set(clues.map((c) => clueKey(c.entry_id, c.clue_text)));
@@ -235,6 +259,7 @@ export async function generateRounds(supabase: SupabaseClient, args: Args, today
         answer: b.answer,
         display_answer: b.displayAnswer,
         difficulty: b.difficulty,
+        about: b.about,
         created_at: "",
       });
       clues.push({ id: `${id}-clue`, entry_id: id, clue_text: b.clueText, created_at: "" });

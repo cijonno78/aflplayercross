@@ -8,6 +8,7 @@ import Grid from "@/components/Grid";
 import ClueList from "@/components/ClueList";
 import ShareButton from "@/components/ShareButton";
 import AdSlot from "@/components/AdSlot";
+import AnswerNotes from "@/components/AnswerNotes";
 import { CATEGORY_ORDER } from "@/lib/game/categories";
 import { SITE_NAME } from "@/lib/site";
 import type { Round, RoundEntryWithDetails } from "@/types/database";
@@ -222,6 +223,8 @@ export default function GameBoard({
           revealedCorrect={revealedCorrect}
         />
       </div>
+
+      {solved && <AnswerNotes roundEntries={roundEntries} />}
 
       <AdSlot />
     </div>
