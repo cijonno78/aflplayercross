@@ -7,6 +7,8 @@ export interface Entry {
   answer: string;
   display_answer: string;
   difficulty: number;
+  /** Short note shown after the puzzle is solved. */
+  about: string | null;
   created_at: string;
 }
 

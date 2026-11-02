@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import GameBoard from "@/components/GameBoard";
@@ -31,6 +32,15 @@ export default async function PlayRoundPage({
           {round.play_date ? "Daily round" : "Practice round"}
         </h1>
       </div>
+
+      <p className="-mt-2 text-sm text-zinc-600 dark:text-zinc-400">
+        Find the easy, medium and hard player. Each clue gives the clubs they played for and their
+        AFL games, with the length of their name in brackets. The names cross, so every one you
+        solve gives you letters for the others. Once you&apos;ve solved it, you&apos;ll find a short
+        career summary for each player below the grid. New to the game? Read the{" "}
+        <Link href="/help" className="underline">rules</Link> or our{" "}
+        <Link href="/guides/how-to-solve" className="underline">solving guide</Link>.
+      </p>
 
       <GameBoard round={round} roundEntries={roundEntries} />
     </main>

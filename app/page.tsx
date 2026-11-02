@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { todayISO } from "@/lib/game/date";
 import RoundCard, { formatRoundDateLabel } from "@/components/RoundCard";
+import Link from "next/link";
 import type { Round } from "@/types/database";
 import { SITE_NAME } from "@/lib/site";
 
@@ -57,6 +58,28 @@ export default async function HomePage() {
         ) : (
           <p className="text-zinc-500">No previous rounds yet.</p>
         )}
+      </section>
+
+      <section className="flex flex-col gap-3 text-zinc-700 dark:text-zinc-300">
+        <h2 className="text-lg font-medium text-zinc-900 dark:text-zinc-100">How it works</h2>
+        <p>
+          {SITE_NAME} is a free daily puzzle for footy fans. Each round is a small crossword with
+          three AFL players to find: an easy one with 200 or more games, a medium one with 100 to
+          199, and a hard one with 50 to 99. Every clue lists the clubs the player played for, in
+          order, and their total AFL games, and the numbers in brackets show the length of their
+          first name and surname.
+        </p>
+        <p>
+          The names cross each other, so the player you know best gives you letters for the other
+          two. Check your answers as often as you like, and take a hint if you&apos;re stuck. Once
+          you&apos;ve solved a round you&apos;ll see a short career summary for each player, from
+          their debut to their goal tally.
+        </p>
+        <p className="text-sm">
+          <Link href="/help" className="underline">Full rules</Link> ·{" "}
+          <Link href="/guides/how-to-solve" className="underline">How to solve</Link> ·{" "}
+          <Link href="/guides" className="underline">All guides</Link>
+        </p>
       </section>
     </main>
   );
