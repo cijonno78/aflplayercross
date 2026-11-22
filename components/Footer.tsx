@@ -13,6 +13,12 @@ export default function Footer() {
           <Link href="/guides" className="hover:underline">
             Guides
           </Link>
+          <Link href="/players" className="hover:underline">
+            Players
+          </Link>
+          <Link href="/clubs" className="hover:underline">
+            Clubs
+          </Link>
           <Link href="/contact" className="hover:underline">
             Contact
           </Link>
