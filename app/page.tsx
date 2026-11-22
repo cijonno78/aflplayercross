@@ -1,3 +1,5 @@
+import type { Metadata } from "next";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { todayISO } from "@/lib/game/date";
 import RoundCard, { formatRoundDateLabel } from "@/components/RoundCard";
@@ -5,6 +7,10 @@ import type { Round } from "@/types/database";
 import { SITE_NAME } from "@/lib/site";
 
 const PREVIOUS_ROUNDS_COUNT = 7;
+
+export const metadata: Metadata = {
+  alternates: { canonical: "/" },
+};
 
 export default async function HomePage() {
   const supabase = await createClient();
@@ -57,6 +63,16 @@ export default async function HomePage() {
         ) : (
           <p className="text-zinc-500">No previous rounds yet.</p>
         )}
+      </section>
+
+      <section className="text-sm text-zinc-600 dark:text-zinc-400">
+        <h2 className="mb-2 text-lg font-medium text-zinc-900 dark:text-zinc-100">Explore past answers</h2>
+        <p>
+          Every finished round lists its answers with a note on each player&apos;s career. Browse{" "}
+          <Link href="/players" className="underline">every player from past rounds</Link>, see them{" "}
+          <Link href="/clubs" className="underline">grouped by club</Link>, or brush up with our{" "}
+          <Link href="/guides" className="underline">guides</Link>.
+        </p>
       </section>
     </main>
   );

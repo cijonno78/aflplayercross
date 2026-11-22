@@ -2,6 +2,7 @@ import type { MetadataRoute } from "next";
 import { createClient } from "@supabase/supabase-js";
 import type { Round } from "@/types/database";
 import { SITE_URL as BASE_URL } from "@/lib/site";
+import { ALL_CLUBS } from "@/lib/clubs";
 
 // Rebuilt hourly so new daily rounds show up without a redeploy.
 export const revalidate = 3600;
@@ -15,13 +16,16 @@ const STATIC_PAGES = [
   "/guides",
   "/guides/how-to-solve",
   "/guides/club-names",
+  "/players",
+  "/clubs",
+  ...ALL_CLUBS.map((c) => `/clubs/${c.slug}`),
   "/privacy-policy",
 ];
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const pages: MetadataRoute.Sitemap = STATIC_PAGES.map((path) => ({
     url: `${BASE_URL}${path}`,
-    changeFrequency: path === "" ? "daily" : "monthly",
+    changeFrequency: path === "" || path === "/players" || path.startsWith("/clubs") ? "daily" : "monthly",
   }));
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;

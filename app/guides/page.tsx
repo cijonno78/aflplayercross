@@ -19,6 +19,16 @@ const guides = [
     title: "AFL club names every solver should know",
     blurb: "The 18 clubs, when they joined, and the old names behind them.",
   },
+  {
+    href: "/players",
+    title: "AFL players from past puzzles",
+    blurb: "Every player from past rounds, with their clubs, career games and the round they appeared in.",
+  },
+  {
+    href: "/clubs",
+    title: "Past answers by club",
+    blurb: "A short history of each club and every past answer who played for it.",
+  },
 ];
 
 export default function GuidesPage() {
